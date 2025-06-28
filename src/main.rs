@@ -3,12 +3,21 @@ use dotenvy::dotenv;
 use lettre::message::{Mailbox, header::ContentType};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
+use polars::prelude::*;
 use std::env;
+use std::fs::File;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Load .env
     dotenv().ok();
+
+    // load CSV file
+    let file = File::open("data.csv")?;
+    let df = CsvReader::new(file)
+        .infer_schema(Some(100)) // scan first 100 rows for schema
+        .has_header(true)
+        .finish()?;
 
     // Load config with context
     let smtp_host = env::var("SMTP_HOST").context("Missing SMTP_HOST")?;
@@ -46,10 +55,11 @@ async fn main() -> Result<()> {
             .credentials(credintials)
             .build();
 
-    match mailer.send(email).await {
-        Ok(_) => println!("Email sent successfully"),
-        Err(e) => eprintln!("Failed to send email: {}", e),
-    }
+    // match mailer.send(email).await {
+    //     Ok(_) => println!("Email sent successfully"),
+    //     Err(e) => eprintln!("Failed to send email: {}", e),
+    // }
+    println!("{}", df);
 
     Ok(())
 }
