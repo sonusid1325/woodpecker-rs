@@ -31,35 +31,44 @@ async fn main() -> Result<()> {
     let from_mailbox: Mailbox = format!("{} <{}>", display_name, from_email)
         .parse()
         .context("Invalid FROM_EMAIL format")?;
-    let to_mailbox: Mailbox = to_email.parse().context("Invalid TO_EMAIL format")?;
 
     println!("From: {:?}", from_mailbox);
-    println!("To: {:?}", to_mailbox);
 
-    // Prepare email
-    let email = Message::builder()
-        .from(from_mailbox)
-        .to(to_mailbox)
-        .subject(format!("Hello its {}", display_name))
-        .header(ContentType::TEXT_PLAIN)
-        .body(format!("Myself {}", display_name))
-        .context("Failed to build the message")?;
+    let name_str = df.column("name")?.str()?;
+    let email_str = df.column("email")?.str()?;
 
-    // SMTP CREDINTIALS
-    let credintials = Credentials::new(smtp_username, smtp_password);
+    for (name, email_opt) in name_str.into_iter().zip(email_str.into_iter()) {
+        let name = name.unwrap_or("Friend");
+        let email = email_opt.unwrap_or("");
+        println!("Name: {}, Email: {}", name, email);
+    }
+    // let to_mailbox: Mailbox = to_email.parse().context("Invalid TO_EMAIL format")?;
 
-    // Mailer
-    let mailer: AsyncSmtpTransport<Tokio1Executor> =
-        AsyncSmtpTransport::<Tokio1Executor>::relay(&smtp_host)
-            .context("Failed to create SMTP transport")?
-            .credentials(credintials)
-            .build();
+    // println!("To: {:?}", to_mailbox);
+
+    // // Prepare email
+    // let email = Message::builder()
+    //     .from(from_mailbox)
+    //     .to(to_mailbox)
+    //     .subject(format!("Hello its {}", display_name))
+    //     .header(ContentType::TEXT_PLAIN)
+    //     .body(format!("Myself {}", display_name))
+    //     .context("Failed to build the message")?;
+
+    // // SMTP CREDINTIALS
+    // let credintials = Credentials::new(smtp_username, smtp_password);
+
+    // // Mailer
+    // let mailer: AsyncSmtpTransport<Tokio1Executor> =
+    //     AsyncSmtpTransport::<Tokio1Executor>::relay(&smtp_host)
+    //         .context("Failed to create SMTP transport")?
+    //         .credentials(credintials)
+    //         .build();
 
     // match mailer.send(email).await {
     //     Ok(_) => println!("Email sent successfully"),
     //     Err(e) => eprintln!("Failed to send email: {}", e),
     // }
-    println!("{}", df);
 
     Ok(())
 }
