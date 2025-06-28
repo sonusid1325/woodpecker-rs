@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use colored::*;
 use dotenvy::dotenv;
 use lettre::message::{Mailbox, header::ContentType};
 use lettre::transport::smtp::authentication::Credentials;
@@ -15,7 +16,7 @@ async fn main() -> Result<()> {
     // load CSV file
     let file = File::open("data.csv")?;
     let df = CsvReader::new(file)
-        .infer_schema(Some(100)) // scan first 100 rows for schema
+        .infer_schema(Some(100))
         .has_header(true)
         .finish()?;
 
@@ -31,7 +32,11 @@ async fn main() -> Result<()> {
         .parse()
         .context("Invalid FROM_EMAIL format")?;
 
-    println!("From: {:?}", from_mailbox);
+    println!(
+        "From: {} \n Name: {}",
+        from_mailbox.email.to_string().blue(),
+        from_mailbox.name.clone().expect("No Name").blue()
+    );
 
     let name_str = df.column("name")?.str()?;
     let email_str = df.column("email")?.str()?;
@@ -43,7 +48,7 @@ async fn main() -> Result<()> {
 
         let to_mailbox: Mailbox = email.parse().context("Invalid TO_EMAIL format")?;
 
-        println!("To: {:?}", to_mailbox);
+        println!("To: {}", to_mailbox.email.to_string().purple());
 
         // Prepare email
         let email = Message::builder()
@@ -65,7 +70,7 @@ async fn main() -> Result<()> {
                 .build();
 
         match mailer.send(email).await {
-            Ok(_) => println!("Email sent successfully"),
+            Ok(_) => println!("{}", "Email sent successfully".green()),
             Err(e) => eprintln!("Failed to send email: {}", e),
         }
     }
