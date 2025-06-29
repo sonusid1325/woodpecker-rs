@@ -62,11 +62,9 @@ async fn main() -> Result<()> {
 
         println!("To: {}", to_mailbox.email.to_string().purple());
 
-        let domain = "Software Development";
         let email_body = template_content
             .replace("{name}", name)
             .replace("{company_name}", company)
-            .replace("{domain}", domain)
             .replace("{sender_email}", &from_mailbox.email.to_string());
 
         let email = Message::builder()
