@@ -1,0 +1,18 @@
+Dear {name},
+
+    I hope this message finds you well.
+
+    My name is ソヌ, and I’m currently pursuing Bachelor of Computer Application. I'm writing to express my keen interest in securing an internship opportunity at {company_name}. With a strong passion for {domain}, I’m excited about the chance to contribute and grow within your team.
+
+    I’ve worked on several projects that reflect my dedication and technical skills. I’m always eager to learn, solve real-world problems, and collaborate on innovative solutions.
+
+    I’ve attached my resume and portfolio for your reference. I’d be thrilled to discuss how I can bring value to your team. Thank you for considering my application.
+
+    Looking forward to your response.
+
+    Warm regards,
+    ソヌ
+    My Portfolio: https://sonusid.me/
+    LinkedIn: https://www.linkedin.com/in/firoj-siddiquie-3215a627b/
+    GitHub: https://github.com/sonusid1325
+    My Email: {sender_email}

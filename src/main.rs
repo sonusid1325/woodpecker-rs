@@ -7,6 +7,7 @@ use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use polars::prelude::*;
 use std::env;
 use std::fs::File;
+use std::io::Read;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -19,6 +20,11 @@ async fn main() -> Result<()> {
         .infer_schema(Some(100))
         .has_header(true)
         .finish()?;
+
+    // Load template
+    let mut template_file = File::open("mail.txt").context("Cannot open main.txt")?;
+    let mut template_content = String::new();
+    template_file.read_to_string(&mut template_content)?;
 
     // Load config with context
     let smtp_host = env::var("SMTP_HOST").context("Missing SMTP_HOST")?;
@@ -40,23 +46,35 @@ async fn main() -> Result<()> {
 
     let name_str = df.column("name")?.str()?;
     let email_str = df.column("email")?.str()?;
+    let company_str = df.column("company")?.str()?;
 
-    for (name, email_opt) in name_str.into_iter().zip(email_str.into_iter()) {
+    for (name, email_opt) in name_str
+        .into_iter()
+        .zip(email_str.into_iter().zip(company_str.into_iter()))
+    {
         let name = name.unwrap_or("Friend");
-        let email = email_opt.unwrap_or("");
+        let email = email_opt.0.unwrap_or("");
+        let company = email_opt.1.unwrap_or("");
+
         println!("Name: {}, Email: {}", name, email);
 
         let to_mailbox: Mailbox = email.parse().context("Invalid TO_EMAIL format")?;
 
         println!("To: {}", to_mailbox.email.to_string().purple());
 
-        // Prepare email
+        let domain = "Software Development";
+        let email_body = template_content
+            .replace("{name}", name)
+            .replace("{company_name}", company)
+            .replace("{domain}", domain)
+            .replace("{sender_email}", &from_mailbox.email.to_string());
+
         let email = Message::builder()
             .from(from_mailbox.clone())
             .to(to_mailbox)
             .subject(format!("Hello its {}", display_name))
             .header(ContentType::TEXT_PLAIN)
-            .body(format!("Myself {}", display_name))
+            .body(email_body)
             .context("Failed to build the message")?;
 
         // SMTP CREDINTIALS
